@@ -40,7 +40,10 @@ def socket_accept():
 # Send commands
 def send_commands(conn):
     while True:
-        cmd = input()
+        if sys.version_info[0] == 3:
+            cmd = input()
+        else:
+            cmd = raw_input()
         if cmd == 'quit':
             conn.close()
             s.close()
