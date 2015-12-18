@@ -29,7 +29,7 @@ def socket_bind():
         socket_bind()
 
 
-# Establish connection with client (socket must be listening first)
+# Establish connection with client (socket must be listening for them)
 def socket_accept():
     conn, address = s.accept()
     print("Connection has been established | " + "IP " + address[0] + " | Port " + str(address[1]))
