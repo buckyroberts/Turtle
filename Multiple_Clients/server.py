@@ -101,10 +101,12 @@ def start_turtle():
         if cmd == 'list':
             display_connections()
             continue
-        if 'select' in cmd:
+        elif 'select' in cmd:
             conn = get_target(cmd)
             if conn is not None:
                 send_target_commands(conn)
+        else:
+            print('Command not recognized')
 
 
 # Create worker threads (will die when main exits)
