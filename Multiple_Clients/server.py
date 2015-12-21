@@ -23,7 +23,7 @@ def socket_create():
         print("Socket creation error: " + str(msg))
 
 
-# Bind socket to port (the host and port the communication will take place) and wait for connection from client
+# Bind socket to port and wait for connection from client
 def socket_bind():
     try:
         global host
