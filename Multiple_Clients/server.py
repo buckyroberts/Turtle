@@ -56,7 +56,6 @@ def accept_connections():
 
 # Interactive prompt for sending commands remotely
 def start_turtle():
-    global s
     while True:
         cmd = input('turtle> ')
         if cmd == 'list':
