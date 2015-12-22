@@ -28,3 +28,11 @@ To list all current connections:
 To select a target from the list of clients:
 
 `turtle> select 3`
+
+***
+
+### Client
+
+In client.py, first change the IP address to that of the server and then run on target machine. If client does not have a compatible version of Python installed, you can create an executable by building from the source using setup.py.
+
+`python setup.py build`
