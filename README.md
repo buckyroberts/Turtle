@@ -1,8 +1,10 @@
 # Python Reverse Shell
 
-This is a multi-client, multi-threaded reverse shell written in Python. There is still a lot of work to do.
+This is a multi-client, multi-threaded reverse shell written in Python. There is still a lot of work to do, so feel free to help out with development.
 
 [YouTube Tutorial Series](https://www.youtube.com/watch?v=1ObzpG_W_0o&list=PL6gx4Cwl9DGCbpkBEMiCaiu_3OL-_Bz_8&index=1)
+
+Disclaimer: This reverse shell should only be used in the lawful, remote administration of authorized systems. Accessing a computer network without authorization or permission is illegal. 
 
 ## How to Use
 
