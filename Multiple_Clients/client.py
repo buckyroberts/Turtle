@@ -10,7 +10,7 @@ def socket_create():
         global host
         global port
         global s
-        host = '192.168.0.5'
+        host = '192.168.1.10'
         # host = '104.236.246.40'
         port = 9999
         s = socket.socket()

@@ -62,9 +62,9 @@ def start_turtle():
             list_connections()
             continue
         elif 'select' in cmd:
-            conn = get_target(cmd)
+            target, conn = get_target(cmd)
             if conn is not None:
-                send_target_commands(conn)
+                send_target_commands(target, conn)
         else:
             print('Command not recognized')
 
@@ -92,14 +92,14 @@ def get_target(cmd):
         conn = all_connections[target]
         print("You are now connected to " + str(all_addresses[target][0]))
         print(str(all_addresses[target][0]) + '> ', end="")
-        return conn
+        return target, conn
     except:
         print('Not a valid selection')
         return None
 
 
 # Connect with remote target client
-def send_target_commands(conn):
+def send_target_commands(target, conn):
     global s
     while True:
         try:
@@ -109,6 +109,8 @@ def send_target_commands(conn):
                 client_response = str(conn.recv(20480), "utf-8")
                 print(client_response, end="")
             if cmd == 'quit':
+                del all_connections[target]
+                del all_addresses[target]
                 break
         except:
             print("Connection was lost")
