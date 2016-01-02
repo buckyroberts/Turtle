@@ -2,6 +2,7 @@ import socket
 import threading
 import time
 from queue import Queue
+from pprint import pprint
 
 NUMBER_OF_THREADS = 2
 JOB_NUMBER = [1, 2]
@@ -47,9 +48,11 @@ def accept_connections():
         try:
             conn, address = s.accept()
             conn.setblocking(1)
+            client_hostname = conn.recv(1024).decode("utf-8")
+            address = address + (client_hostname,)
             all_connections.append(conn)
             all_addresses.append(address)
-            print('\nConnection has been established: ' + address[0])
+            print('\nConnection has been established: {0} ({1})'.format(address[-1], address[0]))
         except:
             print('Error accepting connections')
 
@@ -80,7 +83,7 @@ def list_connections():
             del all_connections[i]
             del all_addresses[i]
             continue
-        results += str(i) + '   ' + str(all_addresses[i][0]) + '   ' + str(all_addresses[i][1]) + '\n'
+        results += str(i) + '   ' + str(all_addresses[i][0]) + '   ' + str(all_addresses[i][1]) + '   ' + str(all_addresses[i][2]) + '\n'
     print('----- Clients -----' + '\n' + results)
 
 

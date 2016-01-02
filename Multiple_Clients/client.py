@@ -25,6 +25,7 @@ def socket_connect():
         global port
         global s
         s.connect((host, port))
+        s.send(str.encode(socket.gethostname()))
     except socket.error as msg:
         print("Socket connection error: " + str(msg))
         time.sleep(5)
