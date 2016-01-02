@@ -93,7 +93,7 @@ def get_target(cmd):
         target = cmd.replace('select ', '')
         target = int(target)
         conn = all_connections[target]
-        print("You are now connected to " + str(all_addresses[target][0]))
+        print("You are now connected to " + str(all_addresses[target][2]))
         # Address shouldn't be printed, we want cwd, instead
         # print(str(all_addresses[target][0]) + '> ', end="")
         return target, conn
