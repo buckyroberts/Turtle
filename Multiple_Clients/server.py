@@ -3,7 +3,6 @@ import threading
 import time
 from queue import Queue
 import struct
-from pprint import pprint
 
 NUMBER_OF_THREADS = 2
 JOB_NUMBER = [1, 2]
@@ -140,7 +139,6 @@ def send_target_commands(target, conn):
                 del all_addresses[target]
                 break
         except:
-            raise
             print("Connection was lost")
             break
 
