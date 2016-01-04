@@ -135,12 +135,13 @@ def send_target_commands(target, conn):
                 client_response = str(cmd_output, "utf-8")
                 print(client_response, end="")
             if cmd == 'quit':
-                del all_connections[target]
-                del all_addresses[target]
+
                 break
         except:
             print("Connection was lost")
             break
+    del all_connections[target]
+    del all_addresses[target]
 
 
 # Create worker threads (will die when main exits)
