@@ -81,6 +81,8 @@ Interactive prompt for sending commands remotely
         target, conn = self.get_target(cmd)
         if conn is not None:
           self.send_target_commands(target, conn)
+      elif cmd == '':
+        pass
       else:
         print('Command not recognized')
     return
