@@ -4,6 +4,7 @@ import time
 import sys
 from queue import Queue
 import struct
+import signal
 
 NUMBER_OF_THREADS = 2
 JOB_NUMBER = [1, 2]
@@ -22,6 +23,27 @@ class MultiServer(object):
     self.all_connections = []
     self.all_addresses = []
 
+
+  def registerSignalHandler(self):
+    '''
+    '''
+    signal.signal(signal.SIGINT, self.quitGracefully)
+    signal.signal(signal.SIGTERM, self.quitGracefully)
+    return
+
+  def quitGracefully(self, signal=None, frame=None):
+    '''
+    '''
+    print('\nQuitting gracefully')
+    for conn in self.all_connections:
+      try:
+        conn.close()
+      except Exception as e:
+        print('Could not close connection %s' %str(e))
+        # continue
+    self.socket.close()
+    sys.exit(0)
+
   def socket_create(self):
     '''
     '''
@@ -31,6 +53,8 @@ class MultiServer(object):
       print("Socket creation error: " + str(msg))
       # TODO: Added exit 
       sys.exit(1)
+    self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    return
 
   def socket_bind(self):
     '''
@@ -177,6 +201,7 @@ def create_workers():
 Create worker threads (will die when main exits)
   '''
   server = MultiServer()
+  server.registerSignalHandler()
   for _ in range(NUMBER_OF_THREADS):
         t = threading.Thread(target=work, args=(server,))
         t.daemon = True
