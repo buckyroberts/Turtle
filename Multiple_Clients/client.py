@@ -4,13 +4,6 @@ import subprocess
 import time
 import struct
 
-'''
-TODO:
-connected then ctrl+d => silent...
-
-'''
-SOCK_TIMEOUT = 2
-
 class Client(object):
 
     def __init__(self):
