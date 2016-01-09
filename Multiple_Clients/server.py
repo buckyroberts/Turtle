@@ -25,10 +25,11 @@ class MultiServer(object):
         signal.signal(signal.SIGTERM, self.quit_gracefully)
         return
 
-    def quit_gracefully(self):
+    def quit_gracefully(self, signal=None, frame=None):
         print('\nQuitting gracefully')
         for conn in self.all_connections:
             try:
+                conn.shutdown(2)
                 conn.close()
             except Exception as e:
                 print('Could not close connection %s' % str(e))
