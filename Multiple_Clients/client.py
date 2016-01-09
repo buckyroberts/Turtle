@@ -14,8 +14,8 @@ SOCK_TIMEOUT = 2
 class Client(object):
 
     def __init__(self):
-        self.serverHost = '192.168.1.9'
-        # self.serverHost = '192.168.0.5'
+        # self.serverHost = '192.168.1.9'
+        self.serverHost = '192.168.0.5'
         self.serverPort = 9999
         self.socket = None
 
