@@ -90,6 +90,12 @@ class MultiServer(object):
                 target, conn = self.get_target(cmd)
                 if conn is not None:
                     self.send_target_commands(target, conn)
+            elif cmd == 'shutdown':
+                    queue.task_done()
+                    queue.task_done()
+                    print('Server shutdown')
+                    break
+                    # self.quit_gracefully()
             elif cmd == '':
                 pass
             else:
@@ -208,13 +214,12 @@ def work(server):
         queue.task_done()
     return
 
-
 def create_jobs():
     """ Each list item is a new job """
     for x in JOB_NUMBER:
         queue.put(x)
     queue.join()
-
+    return
 
 def main():
     create_workers()
