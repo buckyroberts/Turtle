@@ -10,6 +10,12 @@ NUMBER_OF_THREADS = 2
 JOB_NUMBER = [1, 2]
 queue = Queue()
 
+COMMANDS = {'help':['Shows this help'],
+            'list':['Lists connected clients'],
+            'select':['Selects a client by its index. Takes index as a parameter'],
+            'quit':['Stops current connection with a client. To be used when client is selected'],
+            'shutdown':['Shuts server down'],
+           }
 
 class MultiServer(object):
 
@@ -19,6 +25,11 @@ class MultiServer(object):
         self.socket = None
         self.all_connections = []
         self.all_addresses = []
+
+    def print_help(self):
+        for cmd, v in COMMANDS.items():
+            print("{0}:\t{1}".format(cmd, v[0]))
+        return
 
     def register_signal_handler(self):
         signal.signal(signal.SIGINT, self.quit_gracefully)
@@ -96,6 +107,8 @@ class MultiServer(object):
                     print('Server shutdown')
                     break
                     # self.quit_gracefully()
+            elif cmd == 'help':
+                self.print_help()
             elif cmd == '':
                 pass
             else:
