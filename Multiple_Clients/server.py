@@ -193,8 +193,8 @@ class MultiServer(object):
                     print(client_response, end="")
                 if cmd == 'quit':
                     break
-            except:
-                print("Connection was lost")
+            except Exception as e:
+                print("Connection was lost %s" %str(e))
                 break
         del self.all_connections[target]
         del self.all_addresses[target]
