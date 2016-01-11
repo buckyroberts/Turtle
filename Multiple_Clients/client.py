@@ -2,6 +2,8 @@ import os
 import socket
 import subprocess
 import time
+import signal
+import sys
 import struct
 
 class Client(object):
@@ -11,6 +13,23 @@ class Client(object):
         # self.serverHost = '192.168.0.5'
         self.serverPort = 9999
         self.socket = None
+
+    def register_signal_handler(self):
+        signal.signal(signal.SIGINT, self.quit_gracefully)
+        signal.signal(signal.SIGTERM, self.quit_gracefully)
+        return
+
+    def quit_gracefully(self, signal=None, frame=None):
+        print('\nQuitting gracefully')
+        if self.socket:
+            try:
+                self.socket.shutdown(2)
+                self.socket.close()
+            except Exception as e:
+                print('Could not close connection %s' % str(e))
+                # continue
+        sys.exit(0)
+        return
 
     def socket_create(self):
         """ Create a socket """
@@ -87,12 +106,13 @@ class Client(object):
 
 def main():
     client = Client()
+    client.register_signal_handler()
     client.socket_create()
     while True:
         try:
             client.socket_connect()
-        except:
-            # TODO: log error
+        except Exception as e:
+            print("Error on socket connections: %s" %str(e))
             time.sleep(5)     
         else:
             break    
