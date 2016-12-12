@@ -109,6 +109,8 @@ class MultiServer(object):
                     # self.quit_gracefully()
             elif cmd == 'help':
                 self.print_help()
+            elif cmd == 'port':
+                print('Current server port is: '+ str(self.port))
             elif cmd == '':
                 pass
             else:
