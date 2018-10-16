@@ -5,12 +5,12 @@ import time
 import signal
 import sys
 import struct
+import argparse
 
 class Client(object):
 
-    def __init__(self):
-        # self.serverHost = '192.168.1.9'
-        self.serverHost = '192.168.0.5'
+    def __init__(self, host):
+        self.serverHost = host
         self.serverPort = 9999
         self.socket = None
 
@@ -104,26 +104,24 @@ class Client(object):
         return
 
 
-def main():
-    client = Client()
-    client.register_signal_handler()
-    client.socket_create()
-    while True:
-        try:
-            client.socket_connect()
-        except Exception as e:
-            print("Error on socket connections: %s" %str(e))
-            time.sleep(5)     
-        else:
-            break    
-    try:
-        client.receive_commands()
-    except Exception as e:
-        print('Error in main: ' + str(e))
-    client.socket.close()
-    return
-
-
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--host', type=str, default='192.168.0.5', help="Default host IP address")
+    args = parser.parse_args()
     while True:
-        main()
+        client = Client(args.host)
+        client.register_signal_handler()
+        client.socket_create()
+        while True:
+            try:
+                client.socket_connect()
+            except Exception as e:
+                print("Error on socket connections: %s" %str(e))
+                time.sleep(5)
+            else:
+                break
+        try:
+            client.receive_commands()
+        except Exception as e:
+            print('Error in main: ' + str(e))
+        client.socket.close()

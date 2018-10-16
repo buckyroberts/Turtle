@@ -1,7 +1,7 @@
 import os
 import socket
 import subprocess
-
+import argparse
 
 # Create a socket
 def socket_create():
@@ -9,7 +9,6 @@ def socket_create():
         global host
         global port
         global s
-        host = '192.168.0.5'
         port = 9999
         s = socket.socket()
     except socket.error as msg:
@@ -43,10 +42,11 @@ def receive_commands():
     s.close()
 
 
-def main():
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--host', type=str, default='192.168.0.5', help="Default host IP address")
+    args = parser.parse_args()
+    host = args.host
     socket_create()
     socket_connect()
     receive_commands()
-
-
-main()

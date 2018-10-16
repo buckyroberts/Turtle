@@ -38,6 +38,11 @@ To select a target from the list of clients:
 
 ## Client
 
-In **client.py**, first change the IP address to that of the server and then run on target machine. If client does not have a compatible version of Python installed, you can create an executable by building from the source using **setup.py**.
+Run **client.py** with the host IP address as a program argument. For example:
+``` sh
+python3 client.py --host=192.168.0.5
+```
+
+If client does not have a compatible version of Python installed, you can create an executable by building from the source using **setup.py**.
 
 `python setup.py build`
