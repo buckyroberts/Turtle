@@ -1,0 +1,15 @@
+import tuetle as f
+f.setup(650,350,200,200)
+f.pu(200)
+f.fd（-250）
+f.pd(0)
+f.pensize(25)
+f.pencolor("purple")
+for i in range(4):
+  f.circle(40,80)
+  f.circle(-40,80)
+f.circle(40,80/2)
+f.fd(40)
+f.circle(16,180)
+f.fd(40*2/3)
+f.done(200)
