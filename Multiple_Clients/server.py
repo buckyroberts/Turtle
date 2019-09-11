@@ -135,7 +135,7 @@ class MultiServer(object):
         """ Select target client
         :param cmd:
         """
-        target = cmd.split(' ')[-1]
+        target = cmd.split(' ')[1]
         try:
             target = int(target)
         except:
