@@ -39,9 +39,9 @@ def receive_commands():
                     with open(file, "r") as f:
                         file = f.read()
                         buffer = str(len(file))
-                        server.send("#{0}#{1}".format(buffer, name).encode("utf-8"))
+                        s.send("#{0}#{1}".format(buffer, name).encode("utf-8"))
                         time.sleep(0.1)
-                        server.send(file.encode("utf-8"))
+                        s.send(file.encode("utf-8"))
                 while True:
                     file_name = server.recv(1024).decode("utf-8")
                     if file_name.split("#", 1)[0] == "(FT)":
